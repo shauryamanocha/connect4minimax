@@ -1,7 +1,7 @@
 enum Player {
-  Red, 
-    Blue, 
-    None
+  Minimizing, //ai
+    Maximizing, //human player
+    None//empty space
 };
 private int nx = 5, ny = 4, ns = 100;
 //nx-> board width
@@ -28,32 +28,48 @@ void mousePressed() {
   int index = getMoveIndex();
   if (state.board[0][index] == Player.None) {
     insertMove(getMoveIndex(), state.currentPlayer);
-    state.currentPlayer = state.currentPlayer==Player.Red?Player.Blue:Player.Red;
+    state.currentPlayer = state.currentPlayer==Player.Minimizing?Player.Maximizing:Player.Minimizing;
     state.moveCount++;
   }
 }
 boolean insertMove(int index, Player p) {
-  for (int y = 0; y<ny; y++) {
-    if (y == ny-1) {
+  for (int y = 0; y<state.boardHeight; y++) {
+    if (
+      state.board[y][index] == Player.None && state.board[y+1][index]!=Player.None //landed on another piece
+      || y == state.boardHeight-1//landed at the bottom 
+      ) {
       state.board[y][index] = p;
-      return true;
-    }
-    if (state.board[y][index] == Player.None && state.board[y+1][index]!=Player.None) {
-      state.board[y][index] = p;
+      
+      int[][] positionOffsets = new int[][]{
+        {-1,-1},
+        {-1,0},
+        {-1,1},
+        {0,-1},
+        //{0,0},
+        {0,1},
+        {1,-1},
+        {1,0},
+        {1,1},
+      };
+      
+      for(int[] offset : positionOffsets){
+        
+      }
+      
       return true;
     }
   }
-  return false;
+  return false;//invalid position
 }
 
 
 void displayMove() {
   noStroke();
   switch(state.currentPlayer) {
-  case Red:
+  case Minimizing:
     fill(255, 0, 0, 128);
     break;
-  case Blue:
+  case Maximizing:
     fill(0, 0, 255, 128);
     break;
   }
@@ -83,10 +99,10 @@ void drawBoard() {
       stroke(255);
       rect(cx, cy, ns, ns);
       switch(state.board[ny-1-y][x]) {
-      case Red:
+      case Minimizing:
         fill(255, 0, 0);
         break;
-      case Blue:
+      case Maximizing:
         fill(0, 0, 255);
         break;
       }

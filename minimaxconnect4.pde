@@ -1,8 +1,6 @@
-enum Player {
-  Minimizing, //ai
-    Maximizing, //human player
-    None//empty space
-};
+//import processing.dxf.*;
+
+
 private int nx = 5, ny = 4, ns = 100;
 //nx-> board width
 //ny-> board height
@@ -26,7 +24,7 @@ int getMoveIndex() {
 
 void mousePressed() {
   int index = getMoveIndex();
-  if (state.board[0][index] == Player.None) {
+  if (state.board[0][index].player == Player.None) {
     insertMove(getMoveIndex(), state.currentPlayer);
     state.currentPlayer = state.currentPlayer==Player.Minimizing?Player.Maximizing:Player.Minimizing;
     state.moveCount++;
@@ -34,32 +32,47 @@ void mousePressed() {
 }
 boolean insertMove(int index, Player p) {
   for (int y = 0; y<state.boardHeight; y++) {
-    if (
-      state.board[y][index] == Player.None && state.board[y+1][index]!=Player.None //landed on another piece
-      || y == state.boardHeight-1//landed at the bottom 
-      ) {
-      state.board[y][index] = p;
-      
-      int[][] positionOffsets = new int[][]{
-        {-1,-1},
-        {-1,0},
-        {-1,1},
-        {0,-1},
-        //{0,0},
-        {0,1},
-        {1,-1},
-        {1,0},
-        {1,1},
-      };
-      
-      for(int[] offset : positionOffsets){
-        
-      }
-      
+    if (y == state.boardHeight-1) {//landed at the bottom
+      state.board[y][index] = new GamePiece(p); 
+      updateConnections(y, index,p);
+      return true;
+    }
+    if (state.board[y][index].player == Player.None && state.board[y+1][index].player!=Player.None) { //landed on another piece
+      state.board[y][index] = new GamePiece(p); 
+      updateConnections(y, index,p);
       return true;
     }
   }
   return false;//invalid position
+}
+
+void updateConnections(int yPos, int xPos, Player p) {
+  int[][] positionOffsets = new int[][]{
+    {-1, -1}, 
+    {-1, 0}, 
+    {-1, 1}, 
+    {0, -1}, 
+    //{0,0},
+    {0, 1}, 
+    {1, -1}, 
+    {1, 0}, 
+    {1, 1}, 
+  };
+
+  for (int[] pos : positionOffsets) {
+    int newY = yPos+pos[0];
+    int newX = xPos+pos[1];
+    if (
+      0<newX && newX<state.boardWidth &&
+      0<newY && newY<state.boardHeight
+      ) {
+      if (state.board[newY][newX].player==p) {
+        for(Connection c : state.board[newY][newX].connections){
+          
+        }
+      }
+    }
+  }
 }
 
 
@@ -77,7 +90,7 @@ void displayMove() {
   if (0<=index && index<nx) {
     int x = (index*ns)+((width-(nx*ns))/2)+ns/2;
     int y = (height-(ny*ns))-3-ns/2;
-    if (state.board[0][index] == Player.None) {
+    if (state.board[0][index].player == Player.None) {
       ellipse(x, y, ns*0.75, ns*0.75);
     } else {
       textSize(ns);
@@ -98,7 +111,7 @@ void drawBoard() {
       noFill();
       stroke(255);
       rect(cx, cy, ns, ns);
-      switch(state.board[ny-1-y][x]) {
+      switch(state.board[ny-1-y][x].player) {
       case Minimizing:
         fill(255, 0, 0);
         break;
